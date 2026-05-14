@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FAF8F5;
+  --surface: #FFFFFF;
+  --ink: #1A1A1A;
+  --muted: #6B6B6B;
+  --border: #E5E0D8;
+  --accent: #2D4A3E;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-feature-settings: "ss01", "ss02", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #2D4A3E;
+  color: #FAF8F5;
+}
+
+/* Subtle paper grain — adds warmth to the off-white background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Focus ring — warm and obvious without being aggressive */
+*:focus-visible {
+  outline: 2px solid #2D4A3E;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Reading column for long-form content */
+.prose-body {
+  max-width: 65ch;
+  line-height: 1.7;
+}
+
+.prose-body p {
+  margin-bottom: 1.25rem;
+}
+
+.prose-body h2 {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.prose-body a {
+  color: #2D4A3E;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.prose-body a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Number tabular for currency displays */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Smooth number transition for calculator output */
+.numeric-display {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
