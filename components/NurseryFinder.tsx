@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { NurseryMap } from "@/components/NurseryMap";
 
 type ProviderType = "Day nursery" | "Childcare setting";
 
@@ -188,6 +189,36 @@ export function NurseryFinder() {
               </p>
             )}
           </div>
+
+          {/* Map view — only when we have results */}
+          {response.results.length > 0 && (
+            <div className="mb-6">
+              <NurseryMap
+                center={response.center}
+                centerPostcode={response.center.postcode}
+                providers={response.results.map((r) => ({
+                  urn: r.urn,
+                  name: r.name,
+                  rating: r.rating,
+                  postcode: r.postcode,
+                  town: r.town,
+                  distance: r.distance,
+                  lat: r.lat,
+                  lng: r.lng,
+                }))}
+              />
+              <p className="mt-3 text-[0.78rem] text-muted">
+                <span className="font-medium">Legend:</span>{" "}
+                <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-2 rounded-full bg-accent-deep" /> Outstanding</span>
+                <span className="mx-3" />
+                <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-2 rounded-full bg-accent" /> Good</span>
+                <span className="mx-3" />
+                <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-2 rounded-full bg-warmth" /> Requires improvement</span>
+                <span className="mx-3" />
+                <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-2 rounded-full bg-border" /> Not yet inspected</span>
+              </p>
+            </div>
+          )}
 
           {response.total_in_radius === 0 ? (
             <div className="rounded-2xl border border-border bg-surface p-8 text-center">
