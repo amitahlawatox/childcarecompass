@@ -1,0 +1,30 @@
+<svg
+  width="32"
+  height="32"
+  viewBox="0 0 32 32"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Rounded sage background -->
+  <rect width="32" height="32" rx="7" fill="#6B8E72" />
+
+  <!-- Outer compass ring -->
+  <circle
+    cx="16"
+    cy="16"
+    r="10"
+    stroke="#FBF7F1"
+    stroke-width="1.2"
+    fill="none"
+    opacity="0.55"
+  />
+
+  <!-- Compass needle (vertical diamond) -->
+  <path
+    d="M16 7 L18.4 16 L16 25 L13.6 16 Z"
+    fill="#FBF7F1"
+  />
+
+  <!-- Warm peach centre dot -->
+  <circle cx="16" cy="16" r="1.6" fill="#E8A87C" />
+</svg>
