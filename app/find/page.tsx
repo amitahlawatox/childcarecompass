@@ -3,9 +3,9 @@ import { Footer } from "@/components/Footer";
 import { NurseryFinder } from "@/components/NurseryFinder";
 
 export const metadata = {
-  title: "Find nurseries near you",
+  title: "Find a nursery near you — 27,000+ Ofsted-registered providers",
   description:
-    "Search Ofsted-registered nurseries near your UK postcode. View ratings, distance, and find provider details — without giving up any personal information.",
+    "Search every Ofsted-registered day nursery and pre-school in England by UK postcode. View ratings, distance, and capacity — without giving up any personal information.",
 };
 
 export default function FindPage() {
@@ -18,44 +18,18 @@ export default function FindPage() {
             The finder
           </p>
           <h1 className="mt-4 font-display text-[2.2rem] font-light leading-tight tracking-tight-display text-ink sm:text-[2.8rem]">
-            Nurseries near your postcode.
+            Every Ofsted-registered nursery in England,{" "}
+            <span className="italic text-accent">at your fingertips.</span>
           </h1>
           <p className="mt-5 text-[1.02rem] leading-relaxed text-muted">
-            Search Ofsted-registered childcare providers near a postcode. We show you what we know from the public Ofsted register, then send you straight to Google to find the nursery&apos;s own website and contact details. Nothing about your search is recorded, anywhere.
+            Search the complete Ofsted register — over 27,000 day nurseries, pre-schools, and childcare settings. Enter your postcode and see the closest ones with their current Ofsted rating, distance, and the size of the setting. Each result links to a Google search where you&apos;ll find their own website and contact details. We never store your postcode or what you click.
           </p>
         </div>
 
         <NurseryFinder />
 
-        {/* Honest disclosure about sample data */}
-        <div className="mt-16 rounded-2xl border border-warmth/30 bg-surface p-7 lg:p-9">
-          <p className="text-[0.78rem] font-medium uppercase tracking-[0.14em] text-warmth">
-            A note on our data
-          </p>
-          <h2 className="mt-3 font-display text-[1.4rem] font-medium leading-tight tracking-tight-display text-ink">
-            We&apos;re showing sample listings for now.
-          </h2>
-          <div className="mt-4 grid gap-6 text-[0.95rem] leading-relaxed text-muted md:grid-cols-2 lg:gap-10">
-            <p>
-              The full Ofsted register lists over 70,000 childcare providers across England. We&apos;re integrating that dataset (which is published monthly under the Open Government Licence) into our finder over the coming weeks.
-            </p>
-            <p>
-              In the meantime, you&apos;re seeing about two dozen sample providers spread across major UK cities so you can try the search. For real, comprehensive results today, you can also search the official register at{" "}
-              <a
-                href="https://reports.ofsted.gov.uk"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent underline underline-offset-4 hover:text-ink"
-              >
-                reports.ofsted.gov.uk
-              </a>
-              .
-            </p>
-          </div>
-        </div>
-
         {/* What our finder does and doesn't do */}
-        <div className="mt-12 grid gap-8 lg:grid-cols-2">
+        <div className="mt-16 grid gap-8 lg:grid-cols-2">
           <div className="rounded-2xl border border-border bg-bg p-7">
             <p className="text-[0.78rem] font-medium uppercase tracking-[0.14em] text-accent">
               What this finder does
@@ -67,11 +41,11 @@ export default function FindPage() {
               </li>
               <li className="flex gap-3">
                 <span className="mt-2 inline-block h-1 w-1 flex-shrink-0 rounded-full bg-accent" />
-                <span>Filters our list of Ofsted-registered providers by distance from that postcode</span>
+                <span>Searches every Ofsted-registered day nursery and pre-school in England</span>
               </li>
               <li className="flex gap-3">
                 <span className="mt-2 inline-block h-1 w-1 flex-shrink-0 rounded-full bg-accent" />
-                <span>Shows you the Ofsted rating, address, and distance for each one</span>
+                <span>Shows you each provider&apos;s Ofsted rating, address, distance, and capacity</span>
               </li>
               <li className="flex gap-3">
                 <span className="mt-2 inline-block h-1 w-1 flex-shrink-0 rounded-full bg-accent" />
@@ -99,10 +73,26 @@ export default function FindPage() {
               </li>
               <li className="flex gap-3">
                 <span className="mt-2 inline-block h-1 w-1 flex-shrink-0 rounded-full bg-muted/60" />
-                <span>Rank nurseries by anything other than distance and rating</span>
+                <span>Include childminders (Ofsted redacts their addresses for privacy)</span>
               </li>
             </ul>
           </div>
+        </div>
+
+        {/* Data source attribution */}
+        <div className="mt-10 rounded-2xl border border-border bg-surface/60 p-6 text-[0.85rem] leading-relaxed text-muted">
+          <p>
+            <span className="font-medium text-ink">Data source:</span> Information shown comes from the public Ofsted Childcare Providers and Inspections register, used under the Open Government Licence v3.0. Last refreshed January 2026. Always check the latest Ofsted report at{" "}
+            <a
+              href="https://reports.ofsted.gov.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline underline-offset-4 hover:text-ink"
+            >
+              reports.ofsted.gov.uk
+            </a>{" "}
+            before deciding on a nursery.
+          </p>
         </div>
       </main>
       <Footer />

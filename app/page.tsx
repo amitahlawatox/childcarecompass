@@ -1,32 +1,33 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { HeroIllustration } from "@/components/HeroIllustration";
 
 export default function HomePage() {
   return (
     <>
       <Header />
       <main className="relative z-10">
-        {/* Hero */}
-        <section className="mx-auto max-w-6xl px-6 pb-20 pt-16 lg:px-10 lg:pb-32 lg:pt-24">
-          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+        {/* Hero — text + illustration */}
+        <section className="mx-auto max-w-6xl px-6 pb-16 pt-16 lg:px-10 lg:pb-24 lg:pt-24">
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
             <div className="lg:col-span-7">
               <p className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3.5 py-1.5 text-[0.78rem] font-medium uppercase tracking-[0.12em] text-muted">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                Independent · Free · No signup
+                For parents · Free · No signup
               </p>
               <h1 className="font-display text-[2.6rem] font-light leading-[1.05] tracking-tight-display text-ink sm:text-[3.4rem] lg:text-[4.2rem]">
-                The real cost of UK childcare,{" "}
+                The real cost of childcare,{" "}
                 <span className="italic font-normal text-accent">honestly</span>{" "}
                 worked out.
               </h1>
               <p className="mt-7 max-w-xl text-[1.08rem] leading-relaxed text-muted">
-                Childcare Compass shows what you&apos;ll <em>actually</em> pay each month after the government&apos;s funding, Tax-Free Childcare, and the rules nobody explains properly. No name. No email. No phone number. We never store anything.
+                Childcare Compass shows what you&apos;ll <em>actually</em> pay each month after government funding, Tax-Free Childcare, and the rules nobody explains properly. No name. No email. No phone number. We never store anything.
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-4">
                 <Link
                   href="/calculator"
-                  className="rounded-full bg-accent px-7 py-3.5 text-[0.98rem] font-medium text-bg transition-all hover:bg-ink"
+                  className="rounded-full bg-accent px-7 py-3.5 text-[0.98rem] font-medium text-bg transition-all hover:bg-accent-deep"
                 >
                   Get your estimate →
                 </Link>
@@ -38,34 +39,59 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="mt-6 text-[0.85rem] text-muted">
-                Takes 30 seconds · We use only public government rules
+                Takes 30 seconds · 27,000+ Ofsted-registered nurseries searchable
               </p>
             </div>
 
             <div className="lg:col-span-5">
-              <div className="relative rounded-2xl border border-border bg-surface p-7 shadow-[0_12px_40px_-15px_rgba(45,74,62,0.18)] sm:p-9">
-                <p className="text-[0.78rem] font-medium uppercase tracking-[0.14em] text-muted">
-                  An example
-                </p>
-                <p className="mt-3 text-[0.92rem] leading-relaxed text-ink">
-                  Sarah lives in Oxford. Her son is 2. She works 4 days a week. Her nursery costs <span className="font-medium">£8.20/hour</span>.
-                </p>
+              <div className="relative mx-auto max-w-[420px]">
+                <HeroIllustration className="h-auto w-full" />
+              </div>
+            </div>
+          </div>
+        </section>
 
-                <div className="mt-6 space-y-3 border-t border-border pt-5 text-[0.95rem]">
-                  <Row label="Gross monthly fee" value="£1,135" />
-                  <Row label="30 hours funded" value="−£779" accent />
-                  <Row label="Tax-Free Childcare" value="−£71" accent />
-                  <div className="border-t border-border pt-3 mt-2">
-                    <div className="flex items-center justify-between font-medium">
-                      <span>Her real monthly bill</span>
-                      <span className="font-display text-[1.5rem] font-medium tabular-nums text-ink">£285</span>
+        {/* Sarah's story — the example showcase, now as a dedicated section */}
+        <section className="relative py-14 lg:py-20">
+          <div className="mx-auto max-w-6xl px-6 lg:px-10">
+            <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
+              <div className="lg:col-span-5">
+                <p className="text-[0.78rem] font-medium uppercase tracking-[0.14em] text-warmth">
+                  A real example
+                </p>
+                <h2 className="mt-4 font-display text-[1.9rem] font-light leading-tight tracking-tight-display text-ink sm:text-[2.2rem]">
+                  Most parents pay <span className="italic text-accent">far less</span> than the price the nursery quotes them.
+                </h2>
+                <p className="mt-5 text-[1rem] leading-relaxed text-muted">
+                  Government funding for 2-year-olds, Tax-Free Childcare, and the new expanded entitlement compound together — but only if you know about them.
+                </p>
+                <p className="mt-3 text-[1rem] leading-relaxed text-muted">
+                  Meet Sarah. She lives in Oxford, works four days a week, and her two-year-old is in nursery at <span className="font-medium text-ink">£8.20 an hour</span>.
+                </p>
+              </div>
+
+              <div className="lg:col-span-7">
+                <div className="relative rounded-2xl border border-border bg-surface p-7 shadow-[0_12px_40px_-15px_rgba(74,107,81,0.18)] sm:p-9">
+                  {/* Soft decorative dot top right */}
+                  <span className="absolute -top-2 right-8 h-4 w-4 rounded-full bg-warmth-soft" />
+                  <span className="absolute -top-1 right-7 h-2 w-2 rounded-full bg-warmth" />
+
+                  <div className="space-y-3 text-[0.95rem]">
+                    <Row label="Gross monthly fee" value="£1,135" />
+                    <Row label="30 hours funded" value="−£779" accent />
+                    <Row label="Tax-Free Childcare" value="−£71" accent />
+                    <div className="border-t border-border pt-4 mt-3">
+                      <div className="flex items-end justify-between">
+                        <span className="font-medium text-ink">Sarah&apos;s real monthly bill</span>
+                        <span className="font-display text-[2rem] font-light tabular-nums text-accent">£285</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <p className="mt-5 text-[0.82rem] leading-relaxed text-muted">
-                  That&apos;s <span className="font-medium text-ink">75% less</span> than the advertised price — money most parents don&apos;t realise they&apos;re entitled to.
-                </p>
+                  <p className="mt-6 text-[0.88rem] leading-relaxed text-muted">
+                    That&apos;s <span className="font-medium text-ink">75% less</span> than the nursery&apos;s advertised price. Most parents we&apos;ve spoken to had no idea they were entitled to this much.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -129,7 +155,7 @@ export default function HomePage() {
             <div className="mt-14">
               <Link
                 href="/calculator"
-                className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-[0.98rem] font-medium text-bg transition-all hover:bg-ink"
+                className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-[0.98rem] font-medium text-bg transition-all hover:bg-accent-deep"
               >
                 Run the calculator →
               </Link>
@@ -137,7 +163,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Find a nursery */}
+        {/* Find a nursery — now mentions real data */}
         <section className="relative border-t border-border/60 py-20 lg:py-28">
           <div className="mx-auto max-w-6xl px-6 lg:px-10">
             <div className="grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-16">
@@ -146,10 +172,10 @@ export default function HomePage() {
                   Find a nursery
                 </p>
                 <h2 className="mt-4 font-display text-[2rem] font-light leading-tight tracking-tight-display text-ink sm:text-[2.4rem]">
-                  Ofsted-registered providers, sorted by distance from your postcode.
+                  Every Ofsted-registered nursery in England, on one map.
                 </h2>
                 <p className="mt-5 text-[1.02rem] leading-relaxed text-muted">
-                  Enter a postcode. See nurseries, pre-schools, and childminders nearby with their current Ofsted rating and distance. Tap through to find each one&apos;s own website on Google — we never pass your details to anyone, ever.
+                  27,000+ day nurseries, pre-schools, and childcare settings — all from the official Ofsted register. Enter a postcode and see the closest ones, with their current Ofsted rating, distance, and a direct route to their own website.
                 </p>
                 <div className="mt-7">
                   <Link
@@ -162,15 +188,15 @@ export default function HomePage() {
               </div>
 
               <div className="lg:col-span-6">
-                <div className="rounded-2xl border border-border bg-surface p-6 shadow-[0_12px_40px_-15px_rgba(45,74,62,0.18)] sm:p-8">
+                <div className="rounded-2xl border border-border bg-surface p-6 shadow-[0_12px_40px_-15px_rgba(74,107,81,0.15)] sm:p-8">
                   <p className="text-[0.78rem] font-medium uppercase tracking-[0.14em] text-muted">
-                    Example result
+                    A typical search result
                   </p>
                   <div className="mt-4 space-y-3">
-                    <MiniResultRow name="Acorns & Oaks Nursery" rating="Outstanding" miles="0.8" />
-                    <MiniResultRow name="Little Lanterns Day Nursery" rating="Good" miles="1.4" />
-                    <MiniResultRow name="Bumblebee Pre-School" rating="Outstanding" miles="2.1" />
-                    <MiniResultRow name="Willow Tree Nursery" rating="Good" miles="3.0" />
+                    <MiniResultRow name="Little Acorns Day Nursery" rating="Outstanding" miles="0.8" />
+                    <MiniResultRow name="The Old Vicarage Pre-School" rating="Good" miles="1.4" />
+                    <MiniResultRow name="Sunbeam Children's Centre" rating="Outstanding" miles="2.1" />
+                    <MiniResultRow name="Bumblebee Cottage Nursery" rating="Good" miles="3.0" />
                   </div>
                   <p className="mt-5 border-t border-border pt-4 text-[0.82rem] leading-relaxed text-muted">
                     Each result links to a Google search for that provider — where you can find their own website, phone number, and current availability. We never see what you do next.
