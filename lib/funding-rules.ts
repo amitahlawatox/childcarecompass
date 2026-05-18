@@ -1,14 +1,12 @@
 /**
- * UK CHILDCARE FUNDING RULES — SINGLE SOURCE OF TRUTH
+ * UK CHILDCARE FUNDING ENGINE — SINGLE SOURCE OF TRUTH
  *
- * This file encodes all UK government childcare funding rules used by the
- * Childcare Compass calculator. When government rules change, update this
- * file and bump RULES_LAST_REVIEWED.
+ * Encodes UK government childcare funding rules and produces a comparison
+ * of cost scenarios. When government rules change, update this file and
+ * bump RULES_LAST_REVIEWED.
  *
- * Every rule has a `source` linking to the official gov.uk page.
- *
- * IMPORTANT: All outputs from this engine are ESTIMATES. Always confirm with
- * gov.uk before making financial decisions.
+ * IMPORTANT: All outputs are ESTIMATES. The calculator runs entirely in the
+ * browser — no inputs are ever sent to a server or stored.
  */
 
 export const RULES_LAST_REVIEWED = "May 2026";
@@ -27,32 +25,100 @@ export const SOURCES = {
 /** Weeks of funded entitlement per year (term-time model) */
 export const FUNDED_WEEKS_PER_YEAR = 38;
 
-/** Working parents' minimum earnings threshold for 30-hour entitlement
- *  (equivalent of 16 hrs/week at NMW for adults aged 21+) */
-export const MIN_EARNINGS_THRESHOLD = 9518; // approximate annual minimum
-
-/** Income cap above which entitlement is lost */
+/** Income cap — above this for either parent, 30 hours + TFC are lost */
 export const INCOME_CAP_PER_PARENT = 100000;
 
-/** Tax-Free Childcare: gov adds £2 for every £8 = 20% top-up */
-export const TFC_TOPUP_RATE = 0.20;
+/** Tax-Free Childcare: government adds £2 per £8 = 20% top-up */
+export const TFC_TOPUP_RATE = 0.2;
 
-/** Tax-Free Childcare quarterly cap per child */
-export const TFC_QUARTERLY_CAP = 500;
+/** Tax-Free Childcare cap: £500 per quarter per child = £166.67/month */
+export const TFC_MONTHLY_CAP = 500 / 3;
 
-/** Universal Credit childcare element: up to 85% reimbursement */
-export const UC_REIMBURSEMENT_RATE = 0.85;
+/**
+ * Salary sacrifice (childcare vouchers) — basic-rate monthly cap per parent.
+ * NOTE: This scheme CLOSED to new entrants in October 2018. Only parents who
+ * joined before then (and stayed with the same employer) can use it, OR
+ * parents whose employer runs a Workplace Nursery scheme. It is mutually
+ * exclusive with Tax-Free Childcare.
+ */
+export const VOUCHER_MONTHLY_CAP_BASIC = 243;
+/** Combined tax + NI saving rate for a basic-rate taxpayer */
+export const VOUCHER_SAVING_RATE = 0.32;
+
+/** Average weeks per month for cost averaging */
+const WEEKS_PER_MONTH = 4.33;
 
 // -----------------------------------------------------------------------------
-// UK AVERAGE HOURLY RATES (used when user doesn't know their nursery's rate)
-// Source: Coram Family & Childcare Survey 2025, adjusted for inflation
+// REGIONAL HOURLY RATES
+// Estimates derived from the pattern of the Coram Family & Childcare Survey.
+// These are AVERAGES — actual nursery fees vary widely within every region.
+// When precise survey data is sourced, update only this table.
 // -----------------------------------------------------------------------------
 
-export const UK_AVERAGE_HOURLY = {
-  under2: 8.20,
-  twoYear: 7.80,
-  threePlus: 7.40,
+export interface Region {
+  id: string;
+  name: string;
+  /** Average hourly rate for a child under 3 (£) */
+  hourlyUnder3: number;
+  /** Average hourly rate for a child aged 3+ (£) */
+  hourly3Plus: number;
+}
+
+export const REGIONS: Region[] = [
+  { id: "inner-london", name: "Inner London", hourlyUnder3: 10.4, hourly3Plus: 9.6 },
+  { id: "outer-london", name: "Outer London", hourlyUnder3: 9.2, hourly3Plus: 8.5 },
+  { id: "south-east", name: "South East England", hourlyUnder3: 8.6, hourly3Plus: 7.9 },
+  { id: "east-england", name: "East of England", hourlyUnder3: 8.0, hourly3Plus: 7.4 },
+  { id: "south-west", name: "South West England", hourlyUnder3: 7.7, hourly3Plus: 7.1 },
+  { id: "west-midlands", name: "West Midlands", hourlyUnder3: 7.2, hourly3Plus: 6.7 },
+  { id: "east-midlands", name: "East Midlands", hourlyUnder3: 7.0, hourly3Plus: 6.5 },
+  { id: "north-west", name: "North West England", hourlyUnder3: 6.9, hourly3Plus: 6.4 },
+  { id: "yorkshire", name: "Yorkshire & the Humber", hourlyUnder3: 6.6, hourly3Plus: 6.1 },
+  { id: "north-east", name: "North East England", hourlyUnder3: 6.4, hourly3Plus: 6.0 },
+  { id: "scotland", name: "Scotland", hourlyUnder3: 6.5, hourly3Plus: 6.0 },
+  { id: "wales", name: "Wales", hourlyUnder3: 6.3, hourly3Plus: 5.9 },
+  { id: "northern-ireland", name: "Northern Ireland", hourlyUnder3: 6.2, hourly3Plus: 5.8 },
+];
+
+export function getRegion(id: string): Region {
+  return REGIONS.find((r) => r.id === id) || REGIONS[2]; // default South East
+}
+
+// -----------------------------------------------------------------------------
+// WEEKLY SCHEDULE
+// -----------------------------------------------------------------------------
+
+export type DaySession = "none" | "morning" | "afternoon" | "full";
+
+export type WeekSchedule = {
+  mon: DaySession;
+  tue: DaySession;
+  wed: DaySession;
+  thu: DaySession;
+  fri: DaySession;
 };
+
+/** Hours each session type represents */
+const SESSION_HOURS: Record<DaySession, number> = {
+  none: 0,
+  morning: 5,
+  afternoon: 5,
+  full: 10,
+};
+
+export function weeklyHours(schedule: WeekSchedule): number {
+  return (
+    SESSION_HOURS[schedule.mon] +
+    SESSION_HOURS[schedule.tue] +
+    SESSION_HOURS[schedule.wed] +
+    SESSION_HOURS[schedule.thu] +
+    SESSION_HOURS[schedule.fri]
+  );
+}
+
+export function daysAttended(schedule: WeekSchedule): number {
+  return Object.values(schedule).filter((s) => s !== "none").length;
+}
 
 // -----------------------------------------------------------------------------
 // TYPES
@@ -64,59 +130,71 @@ export type FundingModel = "term-time" | "stretched";
 
 export interface CalculatorInputs {
   childAgeMonths: number;
-  hourlyRate: number;
-  hoursPerWeek: number;
+  regionId: string;
+  schedule: WeekSchedule;
   workingStatus: WorkingStatus;
   incomeBand: IncomeBand;
   fundingModel: FundingModel;
+  /** Does the family have access to childcare-voucher salary sacrifice? */
+  hasSalarySacrifice: boolean;
 }
 
-export interface CalculatorResult {
-  grossMonthly: number;
+export interface Scenario {
+  key: "full" | "funded" | "funded-tfc" | "funded-voucher";
+  label: string;
+  shortLabel: string;
+  monthlyBill: number;
+  annualBill: number;
+  description: string;
+  available: boolean;
+}
+
+export interface Eligibility {
+  fifteenHours: boolean;
+  thirtyHours: boolean;
+  taxFreeChildcare: boolean;
   fundedHoursPerWeek: number;
-  fundedDiscountMonthly: number;
-  tfcSavingsMonthly: number;
-  netMonthly: number;
-  eligibility: {
-    fifteenHours: boolean;
-    thirtyHours: boolean;
-    taxFreeChildcare: boolean;
-  };
+}
+
+export interface FullResult {
+  hoursPerWeek: number;
+  daysPerWeek: number;
+  hourlyRate: number;
+  grossMonthly: number;
+  grossAnnual: number;
+  eligibility: Eligibility;
+  scenarios: Scenario[];
+  /** key of the cheapest available scenario */
+  bestScenarioKey: Scenario["key"];
   breakdown: Array<{ label: string; amount: number; type: "cost" | "saving" | "total" }>;
   notes: string[];
 }
 
 // -----------------------------------------------------------------------------
-// ELIGIBILITY LOGIC
+// ELIGIBILITY
 // -----------------------------------------------------------------------------
 
-/** Universal 15-hour entitlement: all 3 and 4 year olds in England */
-function isEligibleFor15Hours(ageMonths: number): boolean {
+function eligible15(ageMonths: number): boolean {
+  // Universal entitlement for all 3- and 4-year-olds
   return ageMonths >= 36 && ageMonths < 60;
 }
 
-/** Working-parent 30-hour entitlement: 9 months to 4 years, both parents working,
- *  each earning between minimum threshold and £100k */
-function isEligibleFor30Hours(
+function eligible30(
   ageMonths: number,
-  workingStatus: WorkingStatus,
-  incomeBand: IncomeBand
+  working: WorkingStatus,
+  income: IncomeBand
 ): boolean {
-  if (ageMonths < 9) return false;
-  if (ageMonths >= 60) return false;
-  if (workingStatus !== "both-work") return false;
-  if (incomeBand === "over-100k") return false;
+  // Working-parent entitlement: 9 months up to school age (from Sept 2025
+  // expansion), both parents working, neither over £100k
+  if (ageMonths < 9 || ageMonths >= 60) return false;
+  if (working !== "both-work") return false;
+  if (income === "over-100k") return false;
   return true;
 }
 
-/** Tax-Free Childcare: working parents (or single working parent),
- *  each earning between minimum threshold and £100k */
-function isEligibleForTFC(
-  workingStatus: WorkingStatus,
-  incomeBand: IncomeBand
-): boolean {
-  if (workingStatus === "neither-works") return false;
-  if (incomeBand === "over-100k") return false;
+function eligibleTFC(working: WorkingStatus, income: IncomeBand): boolean {
+  if (working === "neither-works") return false;
+  if (income === "over-100k") return false;
   return true;
 }
 
@@ -124,139 +202,217 @@ function isEligibleForTFC(
 // CORE CALCULATION
 // -----------------------------------------------------------------------------
 
-export function calculate(inputs: CalculatorInputs): CalculatorResult {
+export function calculate(inputs: CalculatorInputs): FullResult {
   const {
     childAgeMonths,
-    hourlyRate,
-    hoursPerWeek,
+    regionId,
+    schedule,
     workingStatus,
     incomeBand,
     fundingModel,
+    hasSalarySacrifice,
   } = inputs;
 
-  const fifteenHours = isEligibleFor15Hours(childAgeMonths);
-  const thirtyHours = isEligibleFor30Hours(childAgeMonths, workingStatus, incomeBand);
-  const taxFreeChildcare = isEligibleForTFC(workingStatus, incomeBand);
+  const region = getRegion(regionId);
+  const hoursPerWeek = weeklyHours(schedule);
+  const daysPerWeek = daysAttended(schedule);
+  const hourlyRate =
+    childAgeMonths >= 36 ? region.hourly3Plus : region.hourlyUnder3;
 
-  // Funded hours per week
+  // Eligibility
+  const fifteenHours = eligible15(childAgeMonths);
+  const thirtyHours = eligible30(childAgeMonths, workingStatus, incomeBand);
+  const taxFreeChildcare = eligibleTFC(workingStatus, incomeBand);
+
   let fundedHoursPerWeek = 0;
-  if (thirtyHours) {
-    fundedHoursPerWeek = 30;
-  } else if (fifteenHours) {
-    fundedHoursPerWeek = 15;
-  } else if (childAgeMonths >= 9 && workingStatus === "both-work" && incomeBand === "under-100k") {
-    // Working parents under 3 get 30 hours from Sept 2025
-    fundedHoursPerWeek = 30;
-  }
+  if (thirtyHours) fundedHoursPerWeek = 30;
+  else if (fifteenHours) fundedHoursPerWeek = 15;
 
-  // Cap funded hours at actual hours used
   const effectiveFundedHours = Math.min(fundedHoursPerWeek, hoursPerWeek);
 
-  // Gross monthly cost (assume 52 weeks averaged to monthly)
-  const grossMonthly = hourlyRate * hoursPerWeek * 4.33;
+  // Gross monthly cost
+  const grossMonthly = hourlyRate * hoursPerWeek * WEEKS_PER_MONTH;
+  const grossAnnual = grossMonthly * 12;
 
-  // Funded discount — depends on whether nursery operates term-time or stretched
+  // Value of funded hours per month
   let fundedDiscountMonthly = 0;
   if (effectiveFundedHours > 0) {
     if (fundingModel === "term-time") {
-      // 38 weeks of funded hours, averaged across 12 months
-      fundedDiscountMonthly = (effectiveFundedHours * hourlyRate * FUNDED_WEEKS_PER_YEAR) / 12;
+      fundedDiscountMonthly =
+        (effectiveFundedHours * hourlyRate * FUNDED_WEEKS_PER_YEAR) / 12;
     } else {
-      // Stretched: funded hours spread across all weeks
-      const stretchedHoursPerWeek = (effectiveFundedHours * FUNDED_WEEKS_PER_YEAR) / 52;
-      fundedDiscountMonthly = stretchedHoursPerWeek * hourlyRate * 4.33;
+      const stretchedPerWeek =
+        (effectiveFundedHours * FUNDED_WEEKS_PER_YEAR) / 52;
+      fundedDiscountMonthly = stretchedPerWeek * hourlyRate * WEEKS_PER_MONTH;
     }
   }
 
-  // Remaining bill before TFC
-  const remainingAfterFunding = Math.max(0, grossMonthly - fundedDiscountMonthly);
+  const afterFunding = Math.max(0, grossMonthly - fundedDiscountMonthly);
 
-  // Tax-Free Childcare: 20% top-up on parent contribution, capped at £500/quarter (£166/month)
-  let tfcSavingsMonthly = 0;
-  if (taxFreeChildcare && remainingAfterFunding > 0) {
-    const calculatedTfc = remainingAfterFunding * TFC_TOPUP_RATE;
-    const monthlyTfcCap = TFC_QUARTERLY_CAP / 3;
-    tfcSavingsMonthly = Math.min(calculatedTfc, monthlyTfcCap);
+  // Tax-Free Childcare: 20% on remaining, capped
+  let tfcSaving = 0;
+  if (taxFreeChildcare && afterFunding > 0) {
+    tfcSaving = Math.min(afterFunding * TFC_TOPUP_RATE, TFC_MONTHLY_CAP);
   }
 
-  const netMonthly = Math.max(0, remainingAfterFunding - tfcSavingsMonthly);
+  // Salary sacrifice (childcare vouchers): saving on the sacrificed amount.
+  // Two working parents could each sacrifice; one-works = single cap.
+  let voucherSaving = 0;
+  if (hasSalarySacrifice && afterFunding > 0) {
+    const parents = workingStatus === "both-work" ? 2 : 1;
+    const maxSacrifice = Math.min(
+      afterFunding,
+      VOUCHER_MONTHLY_CAP_BASIC * parents
+    );
+    voucherSaving = maxSacrifice * VOUCHER_SAVING_RATE;
+  }
 
-  // Human-readable breakdown
-  const breakdown: CalculatorResult["breakdown"] = [
-    { label: "Gross monthly nursery fee", amount: grossMonthly, type: "cost" },
+  // -------- Build the comparison scenarios --------
+  const scenarios: Scenario[] = [
+    {
+      key: "full",
+      label: "Full price, no support",
+      shortLabel: "Full price",
+      monthlyBill: grossMonthly,
+      annualBill: grossMonthly * 12,
+      description:
+        "What you'd pay if you claimed nothing — the price most nurseries advertise.",
+      available: true,
+    },
+    {
+      key: "funded",
+      label: "With funded hours only",
+      shortLabel: "Funded hours",
+      monthlyBill: afterFunding,
+      annualBill: afterFunding * 12,
+      description:
+        effectiveFundedHours > 0
+          ? `With your ${effectiveFundedHours} government-funded hours a week applied.`
+          : "You don't currently qualify for funded hours, so this matches the full price.",
+      available: effectiveFundedHours > 0,
+    },
+    {
+      key: "funded-tfc",
+      label: "Funded hours + Tax-Free Childcare",
+      shortLabel: "+ Tax-Free Childcare",
+      monthlyBill: Math.max(0, afterFunding - tfcSaving),
+      annualBill: Math.max(0, afterFunding - tfcSaving) * 12,
+      description:
+        "Funded hours plus the government's 20% Tax-Free Childcare top-up. For most families, this is the best option.",
+      available: taxFreeChildcare,
+    },
+    {
+      key: "funded-voucher",
+      label: "Funded hours + salary sacrifice",
+      shortLabel: "+ Salary sacrifice",
+      monthlyBill: Math.max(0, afterFunding - voucherSaving),
+      annualBill: Math.max(0, afterFunding - voucherSaving) * 12,
+      description:
+        "Funded hours plus childcare-voucher salary sacrifice. Only available if you joined the scheme before October 2018, or your employer runs a workplace nursery scheme. Cannot be combined with Tax-Free Childcare.",
+      available: hasSalarySacrifice,
+    },
   ];
 
+  // Best (cheapest) available scenario
+  const availableScenarios = scenarios.filter((s) => s.available);
+  const bestScenario = availableScenarios.reduce((best, s) =>
+    s.monthlyBill < best.monthlyBill ? s : best
+  );
+
+  // Itemised breakdown for the best scenario
+  const breakdown: FullResult["breakdown"] = [
+    { label: "Gross monthly nursery fee", amount: grossMonthly, type: "cost" },
+  ];
   if (fundedDiscountMonthly > 0) {
     breakdown.push({
-      label: `Government-funded hours (${effectiveFundedHours} hrs/week)`,
+      label: `Government-funded hours (${effectiveFundedHours}/week)`,
       amount: -fundedDiscountMonthly,
       type: "saving",
     });
   }
-
-  if (tfcSavingsMonthly > 0) {
+  if (bestScenario.key === "funded-tfc" && tfcSaving > 0) {
     breakdown.push({
-      label: "Tax-Free Childcare top-up",
-      amount: -tfcSavingsMonthly,
+      label: "Tax-Free Childcare top-up (20%)",
+      amount: -tfcSaving,
       type: "saving",
     });
   }
-
+  if (bestScenario.key === "funded-voucher" && voucherSaving > 0) {
+    breakdown.push({
+      label: "Salary-sacrifice saving",
+      amount: -voucherSaving,
+      type: "saving",
+    });
+  }
   breakdown.push({
     label: "Your estimated monthly bill",
-    amount: netMonthly,
+    amount: bestScenario.monthlyBill,
     type: "total",
   });
 
   // Plain-language notes
   const notes: string[] = [];
-
+  if (hoursPerWeek === 0) {
+    notes.push("Add some sessions to your weekly schedule to see an estimate.");
+  }
   if (fundedHoursPerWeek === 30) {
-    notes.push("You appear eligible for 30 hours of government-funded childcare per week (working parents).");
+    notes.push(
+      "You appear eligible for 30 hours of government-funded childcare a week."
+    );
   } else if (fundedHoursPerWeek === 15) {
-    notes.push("You appear eligible for the universal 15 hours of free childcare for 3 and 4 year olds.");
+    notes.push(
+      "You appear eligible for the universal 15 hours for 3- and 4-year-olds."
+    );
   } else if (childAgeMonths < 9) {
     notes.push("Children under 9 months are not yet eligible for funded hours.");
-  } else if (workingStatus !== "both-work") {
-    notes.push("To unlock 30 funded hours, both parents need to be working and earning above the minimum threshold.");
+  } else if (workingStatus !== "both-work" && childAgeMonths < 36) {
+    notes.push(
+      "30 funded hours for under-3s needs both parents working above the minimum income threshold."
+    );
   } else if (incomeBand === "over-100k") {
-    notes.push("Funded hours and Tax-Free Childcare are not available when either parent earns over £100,000.");
+    notes.push(
+      "Funded hours and Tax-Free Childcare are withdrawn when either parent earns over £100,000."
+    );
   }
-
-  if (taxFreeChildcare) {
-    notes.push("Tax-Free Childcare adds £2 for every £8 you pay in, up to £500 per quarter, per child.");
+  if (hasSalarySacrifice && taxFreeChildcare) {
+    notes.push(
+      "You've told us you have salary-sacrifice access. Remember: you can use salary sacrifice OR Tax-Free Childcare — not both. The chart shows each as a separate option so you can compare."
+    );
   }
-
-  if (fundingModel === "term-time") {
-    notes.push("This estimate assumes funded hours apply for 38 weeks a year (term-time only), averaged across 12 months.");
-  } else {
-    notes.push("This estimate assumes your nursery offers stretched funding (hours spread across all 52 weeks).");
-  }
-
-  notes.push("This is an estimate. Confirm your actual entitlement at gov.uk/childcare-calculator before making decisions.");
+  notes.push(
+    fundingModel === "term-time"
+      ? "Assumes funded hours apply for 38 weeks a year (term-time), averaged across 12 months."
+      : "Assumes your nursery offers stretched funding (hours spread across all 52 weeks)."
+  );
+  notes.push(
+    `Hourly rate used: £${hourlyRate.toFixed(2)} — the estimated average for ${region.name}. Your nursery's actual rate may differ.`
+  );
 
   return {
+    hoursPerWeek,
+    daysPerWeek,
+    hourlyRate,
     grossMonthly,
-    fundedHoursPerWeek: effectiveFundedHours,
-    fundedDiscountMonthly,
-    tfcSavingsMonthly,
-    netMonthly,
+    grossAnnual,
     eligibility: {
       fifteenHours,
       thirtyHours,
       taxFreeChildcare,
+      fundedHoursPerWeek: effectiveFundedHours,
     },
+    scenarios,
+    bestScenarioKey: bestScenario.key,
     breakdown,
     notes,
   };
 }
 
 // -----------------------------------------------------------------------------
-// FORMATTING HELPERS
+// FORMATTING
 // -----------------------------------------------------------------------------
 
 export function formatCurrency(amount: number): string {
-  const sign = amount < 0 ? "-" : "";
+  const sign = amount < 0 ? "−" : "";
   const abs = Math.abs(amount);
-  return `${sign}£${abs.toFixed(0)}`;
+  return `${sign}£${abs.toLocaleString("en-GB", { maximumFractionDigits: 0 })}`;
 }

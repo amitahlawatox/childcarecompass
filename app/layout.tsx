@@ -51,8 +51,46 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://childcarecompass.co.uk/#organization",
+        name: "Childcare Compass",
+        url: "https://childcarecompass.co.uk",
+        description:
+          "An independent UK childcare affordability service. Free childcare cost calculator and Ofsted-registered nursery finder, with zero personal data collected.",
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://childcarecompass.co.uk/#website",
+        url: "https://childcarecompass.co.uk",
+        name: "Childcare Compass",
+        publisher: { "@id": "https://childcarecompass.co.uk/#organization" },
+        inLanguage: "en-GB",
+      },
+      {
+        "@type": "WebApplication",
+        name: "UK Childcare Cost Calculator",
+        url: "https://childcarecompass.co.uk/calculator",
+        applicationCategory: "FinanceApplication",
+        operatingSystem: "Any",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "GBP" },
+        description:
+          "Free calculator showing the real monthly cost of UK childcare after 15/30 funded hours, Tax-Free Childcare, and salary sacrifice.",
+      },
+    ],
+  };
+
   return (
     <html lang="en-GB" className={`${fraunces.variable} ${plex.variable}`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      </head>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );
