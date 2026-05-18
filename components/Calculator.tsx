@@ -12,13 +12,15 @@ import {
   type FundingModel,
 } from "@/lib/funding-rules";
 import { CalculatorChart } from "@/components/CalculatorChart";
+import { ScenarioComparison } from "@/components/ScenarioComparison";
+import { useCountUp } from "@/lib/use-count-up";
 
-const DAYS: Array<{ key: keyof WeekSchedule; label: string }> = [
-  { key: "mon", label: "Monday" },
-  { key: "tue", label: "Tuesday" },
-  { key: "wed", label: "Wednesday" },
-  { key: "thu", label: "Thursday" },
-  { key: "fri", label: "Friday" },
+const DAYS: Array<{ key: keyof WeekSchedule; label: string; short: string }> = [
+  { key: "mon", label: "Monday", short: "Mon" },
+  { key: "tue", label: "Tuesday", short: "Tue" },
+  { key: "wed", label: "Wednesday", short: "Wed" },
+  { key: "thu", label: "Thursday", short: "Thu" },
+  { key: "fri", label: "Friday", short: "Fri" },
 ];
 
 const SESSIONS: Array<{ value: DaySession; label: string }> = [
@@ -61,6 +63,19 @@ export function Calculator() {
   const bestScenario = result.scenarios.find(
     (s) => s.key === result.bestScenarioKey
   )!;
+  const fullScenario = result.scenarios.find((s) => s.key === "full")!;
+
+  // Headline figures
+  const headlineBill =
+    view === "monthly" ? bestScenario.monthlyBill : bestScenario.annualBill;
+  const fullBill =
+    view === "monthly" ? fullScenario.monthlyBill : fullScenario.annualBill;
+  const saving = Math.max(fullBill - headlineBill, 0);
+  const savingPct = fullBill > 0 ? Math.round((saving / fullBill) * 100) : 0;
+
+  // Animated values
+  const animatedBill = useCountUp(headlineBill);
+  const animatedSaving = useCountUp(saving);
 
   function setDay(day: keyof WeekSchedule, session: DaySession) {
     setSchedule((prev) => ({ ...prev, [day]: session }));
@@ -70,7 +85,6 @@ export function Calculator() {
     <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
       {/* INPUTS */}
       <div className="space-y-8 lg:col-span-7">
-        {/* 1. Child age */}
         <Field
           number="1"
           title="How old is your child?"
@@ -99,7 +113,6 @@ export function Calculator() {
           </div>
         </Field>
 
-        {/* 2. Working situation */}
         <Field
           number="2"
           title="Your working situation"
@@ -116,7 +129,6 @@ export function Calculator() {
           />
         </Field>
 
-        {/* 3. Household income */}
         <Field
           number="3"
           title="Household income"
@@ -132,7 +144,6 @@ export function Calculator() {
           />
         </Field>
 
-        {/* 4. Region */}
         <Field
           number="4"
           title="Where do you live?"
@@ -151,11 +162,10 @@ export function Calculator() {
           </select>
         </Field>
 
-        {/* 5. Funding model */}
         <Field
           number="5"
           title="Funding model"
-          hint="Ask your nursery which they use. Term-time stretches funded hours over 38 weeks; stretched spreads them over the whole year."
+          hint="Ask your nursery which they use. Term-time spreads funded hours over 38 weeks; stretched spreads them over the whole year."
         >
           <SegmentedControl
             value={fundingModel}
@@ -167,20 +177,20 @@ export function Calculator() {
           />
         </Field>
 
-        {/* 6. Weekly schedule */}
         <Field
           number="6"
           title="Your weekly schedule"
           hint="Tap the sessions your child attends. A morning or afternoon counts as a half day."
         >
           <div className="space-y-2">
-            {DAYS.map(({ key, label }) => (
+            {DAYS.map(({ key, label, short }) => (
               <div
                 key={key}
                 className="flex items-center gap-3 rounded-xl border border-border bg-bg px-3 py-2.5"
               >
-                <span className="w-[5.5rem] flex-shrink-0 text-[0.9rem] font-medium text-ink">
-                  {label}
+                <span className="w-[3rem] flex-shrink-0 text-[0.9rem] font-medium text-ink sm:w-[5.5rem]">
+                  <span className="sm:hidden">{short}</span>
+                  <span className="hidden sm:inline">{label}</span>
                 </span>
                 <div className="grid flex-1 grid-cols-4 gap-1.5">
                   {SESSIONS.map((s) => (
@@ -207,11 +217,10 @@ export function Calculator() {
           </p>
         </Field>
 
-        {/* 7. Salary sacrifice */}
         <Field
           number="7"
           title="Salary sacrifice access"
-          hint="The childcare-voucher scheme closed to new joiners in October 2018. Only tick this if you joined before then, or your employer runs a workplace nursery scheme."
+          hint="The childcare-voucher scheme closed to new joiners in October 2018. Only tick this if you joined before then, or your employer runs a workplace nursery scheme. It cannot be combined with Tax-Free Childcare."
         >
           <SegmentedControl
             value={hasSalarySacrifice ? "yes" : "no"}
@@ -226,49 +235,79 @@ export function Calculator() {
 
       {/* RESULTS — sticky on desktop */}
       <div className="lg:col-span-5">
-        <div className="lg:sticky lg:top-6 space-y-5">
-          {/* Headline result */}
-          <div className="rounded-2xl border border-accent/30 bg-accent-soft p-6 lg:p-7">
-            <p className="text-[0.78rem] font-medium uppercase tracking-[0.12em] text-accent-deep">
-              Your estimated {view === "monthly" ? "monthly" : "annual"} bill
-            </p>
+        <div className="lg:sticky lg:top-6 space-y-5 animate-fade-in-up">
+          {/* Savings hero */}
+          {saving > 0 ? (
+            <div className="overflow-hidden rounded-2xl border border-accent/30 bg-gradient-to-br from-accent-soft to-warmth-soft/40 p-6 lg:p-7">
+              <p className="text-[0.78rem] font-medium uppercase tracking-[0.12em] text-accent-deep">
+                You could save
+              </p>
+              <p className="mt-1.5 font-display text-[2.8rem] font-light leading-none tracking-tight-display text-ink">
+                {formatCurrency(Math.round(animatedSaving))}
+              </p>
+              <p className="mt-2 text-[0.92rem] text-ink">
+                a {view === "monthly" ? "month" : "year"} —{" "}
+                <span className="font-medium text-accent-deep">
+                  {savingPct}% less
+                </span>{" "}
+                than the full advertised price.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <p className="text-[0.92rem] text-muted">
+                On these answers, no government funding applies yet. Adjust your
+                child&apos;s age or working situation to see what you could save.
+              </p>
+            </div>
+          )}
+
+          {/* Headline bill */}
+          <div className="rounded-2xl border border-border bg-surface p-6 lg:p-7">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-[0.78rem] font-medium uppercase tracking-[0.12em] text-muted">
+                Your estimated {view === "monthly" ? "monthly" : "annual"} bill
+              </p>
+              <div className="inline-flex rounded-full border border-border bg-bg p-0.5">
+                {(["monthly", "annual"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setView(v)}
+                    className={`rounded-full px-3 py-1 text-[0.78rem] font-medium capitalize transition-all ${
+                      view === v ? "bg-accent text-bg" : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="mt-2 font-display text-[3rem] font-light leading-none tracking-tight-display text-ink">
-              {formatCurrency(
-                view === "monthly"
-                  ? bestScenario.monthlyBill
-                  : bestScenario.annualBill
-              )}
+              {formatCurrency(Math.round(animatedBill))}
             </p>
             <p className="mt-2 text-[0.9rem] text-muted">
-              Best option for you: {bestScenario.label.toLowerCase()}
+              Best route for you: {bestScenario.label.toLowerCase()}
             </p>
-
-            {/* Monthly / Annual toggle */}
-            <div className="mt-4 inline-flex rounded-full border border-border bg-surface p-0.5">
-              {(["monthly", "annual"] as const).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setView(v)}
-                  className={`rounded-full px-4 py-1.5 text-[0.82rem] font-medium capitalize transition-all ${
-                    view === v ? "bg-accent text-bg" : "text-muted hover:text-ink"
-                  }`}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* Comparison chart */}
+          {/* Cumulative comparison chart */}
           <div className="rounded-2xl border border-border bg-surface p-5 lg:p-6">
-            <p className="mb-1 font-display text-[1.05rem] font-medium tracking-tight-display text-ink">
-              Compare your options
+            <p className="font-display text-[1.05rem] font-medium tracking-tight-display text-ink">
+              How the cost adds up over a year
             </p>
-            <p className="mb-3 text-[0.82rem] text-muted">
-              {view === "monthly" ? "Monthly" : "Annual"} cost under each funding route
+            <p className="mb-3 mt-0.5 text-[0.82rem] text-muted">
+              Each line is a funding route. The wider the gap, the more you keep.
             </p>
-            <CalculatorChart
+            <CalculatorChart scenarios={result.scenarios} />
+          </div>
+
+          {/* Scenario comparison summary */}
+          <div className="rounded-2xl border border-border bg-surface p-5 lg:p-6">
+            <p className="mb-4 font-display text-[1.05rem] font-medium tracking-tight-display text-ink">
+              Compare your options side by side
+            </p>
+            <ScenarioComparison
               scenarios={result.scenarios}
               bestKey={result.bestScenarioKey}
               view={view}
@@ -331,9 +370,7 @@ export function Calculator() {
               on={result.eligibility.taxFreeChildcare}
               label="Tax-Free Childcare"
             />
-            {hasSalarySacrifice && (
-              <Badge on label="Salary sacrifice" />
-            )}
+            {hasSalarySacrifice && <Badge on label="Salary sacrifice" />}
           </div>
 
           {/* Notes */}
@@ -377,11 +414,9 @@ function Field({
         <span className="font-display text-[0.9rem] font-medium text-accent">
           {number}
         </span>
-        <div>
-          <h3 className="font-display text-[1.15rem] font-medium tracking-tight-display text-ink">
-            {title}
-          </h3>
-        </div>
+        <h3 className="font-display text-[1.15rem] font-medium tracking-tight-display text-ink">
+          {title}
+        </h3>
       </div>
       {children}
       <p className="mt-2.5 text-[0.82rem] leading-relaxed text-muted">{hint}</p>
@@ -399,7 +434,10 @@ function SegmentedControl({
   options: Array<{ value: string; label: string }>;
 }) {
   return (
-    <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}>
+    <div
+      className="grid gap-1.5"
+      style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
+    >
       {options.map((opt) => (
         <button
           key={opt.value}
