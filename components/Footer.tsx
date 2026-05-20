@@ -19,7 +19,7 @@ export function Footer() {
               The tools
             </p>
             <ul className="mt-4 space-y-2.5 text-[0.95rem]">
-              <li><Link href="/calculator" className="hover:text-accent">Cost calculator</Link></li>
+              <li><Link href="/" className="hover:text-accent">Cost calculator</Link></li>
               <li><Link href="/find" className="hover:text-accent">Find a nursery</Link></li>
               <li><Link href="/how-it-works" className="hover:text-accent">How it works</Link></li>
             </ul>

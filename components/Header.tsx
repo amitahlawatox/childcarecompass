@@ -11,7 +11,7 @@ export function Header() {
           </span>
         </Link>
         <nav className="hidden items-center gap-8 text-[0.92rem] text-ink md:flex">
-          <Link href="/calculator" className="transition-opacity hover:opacity-60">
+          <Link href="/" className="transition-opacity hover:opacity-60">
             Calculator
           </Link>
           <Link href="/find" className="transition-opacity hover:opacity-60">
@@ -21,14 +21,14 @@ export function Header() {
             How it works
           </Link>
           <Link
-            href="/calculator"
+            href="/"
             className="rounded-full bg-accent px-5 py-2 text-[0.88rem] font-medium text-bg transition-all hover:bg-ink"
           >
             Start estimate
           </Link>
         </nav>
         <Link
-          href="/calculator"
+          href="/"
           className="rounded-full bg-accent px-4 py-2 text-[0.85rem] font-medium text-bg md:hidden"
         >
           Start
