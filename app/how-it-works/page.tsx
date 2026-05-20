@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { RULES_LAST_REVIEWED, SOURCES } from "@/lib/funding-rules";
 
 export const metadata = {
+  alternates: { canonical: "/how-it-works" },
   title: "How UK childcare funding actually works",
   description:
     "A plain-English guide to 15 and 30 funded hours, Tax-Free Childcare, and Universal Credit childcare support in the UK.",

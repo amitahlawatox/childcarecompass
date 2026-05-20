@@ -51,6 +51,7 @@ export function Calculator() {
   const [salaryTaxBand, setSalaryTaxBand] = useState<SalaryTaxBand>("basic");
   const [view, setView] = useState<"monthly" | "annual">("monthly");
   const [shareCopied, setShareCopied] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   // On mount: if a shared URL contains encoded inputs, hydrate them
   useEffect(() => {
@@ -379,24 +380,32 @@ export function Calculator() {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() =>
-                downloadCalculatorPdf(
-                  {
-                    childAgeMonths: ageMonths,
-                    regionId,
-                    schedule,
-                    workingStatus,
-                    incomeBand,
-                    fundingModel,
-                    hasSalarySacrifice,
-                    salaryTaxBand,
-                  },
-                  result
-                )
-              }
-              className="rounded-full border border-border bg-surface px-4 py-3 text-[0.88rem] font-medium text-ink transition-all hover:border-accent hover:text-accent"
+              disabled={pdfBusy}
+              onClick={async () => {
+                setPdfBusy(true);
+                try {
+                  await downloadCalculatorPdf(
+                    {
+                      childAgeMonths: ageMonths,
+                      regionId,
+                      schedule,
+                      workingStatus,
+                      incomeBand,
+                      fundingModel,
+                      hasSalarySacrifice,
+                      salaryTaxBand,
+                    },
+                    result
+                  );
+                } catch (e) {
+                  console.error("PDF generation failed", e);
+                } finally {
+                  setPdfBusy(false);
+                }
+              }}
+              className="rounded-full border border-border bg-surface px-4 py-3 text-[0.88rem] font-medium text-ink transition-all hover:border-accent hover:text-accent disabled:opacity-60"
             >
-              ↓ Download PDF
+              {pdfBusy ? "Generating…" : "↓ Download PDF"}
             </button>
             <button
               type="button"

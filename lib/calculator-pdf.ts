@@ -1,6 +1,5 @@
 "use client";
 
-import jsPDF from "jspdf";
 import type { FullResult, CalculatorInputs } from "@/lib/funding-rules";
 import {
   REGIONS,
@@ -15,14 +14,20 @@ import {
  * the user's machine. The PDF includes a generation timestamp and a
  * unique reference code so any copy can be traced back to its origin.
  *
- * It's not cryptographically tamper-proof (no PDF is downloadable
- * format truly is), but the heavy branding, generation metadata, and
- * reference code make casual editing visible and easy to dispute.
+ * jsPDF (~200KB minified) is dynamically imported so it only loads when
+ * the user actually clicks "Download PDF" — keeping the initial bundle
+ * small and the Lighthouse Performance score high.
+ *
+ * It's not cryptographically tamper-proof (no downloadable PDF format
+ * truly is), but the heavy branding, generation metadata, and reference
+ * code make casual editing visible and easy to dispute.
  */
-export function downloadCalculatorPdf(
+export async function downloadCalculatorPdf(
   inputs: CalculatorInputs,
   result: FullResult
 ) {
+  // Lazy-load jsPDF — only when the user clicks Download
+  const { default: jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const PAGE_W = doc.internal.pageSize.getWidth(); // 595pt
   const MARGIN = 48;

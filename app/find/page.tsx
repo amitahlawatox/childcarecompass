@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { NurseryFinder } from "@/components/NurseryFinder";
 
 export const metadata = {
+  alternates: { canonical: "/find" },
   title: "Find a nursery near you — 27,000+ Ofsted-registered providers",
   description:
     "Search every Ofsted-registered day nursery and pre-school in England by UK postcode. View ratings, distance, and capacity — without giving up any personal information.",

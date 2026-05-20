@@ -1,104 +1,159 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { HeroIllustration } from "@/components/HeroIllustration";
+import { Calculator } from "@/components/Calculator";
+import { RULES_LAST_REVIEWED } from "@/lib/funding-rules";
+
+export const metadata: Metadata = {
+  title:
+    "UK Childcare Cost Calculator — Your Real Monthly Bill After Funding",
+  description:
+    "Free UK childcare cost calculator. See what you'll really pay each month after 15/30 hours funded childcare, Tax-Free Childcare, and salary sacrifice. No signup, no data stored, 2026 rates.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "UK Childcare Cost Calculator — Childcare Compass",
+    description:
+      "See your real monthly childcare bill in 30 seconds. Every government scheme applied. No signup.",
+    url: "https://childcarecompass.co.uk/",
+    siteName: "Childcare Compass",
+    locale: "en_GB",
+    type: "website",
+  },
+};
 
 export default function HomePage() {
   return (
     <>
       <Header />
       <main className="relative z-10">
-        {/* Hero — text + illustration */}
-        <section className="mx-auto max-w-6xl px-6 pb-16 pt-16 lg:px-10 lg:pb-24 lg:pt-24">
-          <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
-            <div className="lg:col-span-7">
-              <p className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3.5 py-1.5 text-[0.78rem] font-medium uppercase tracking-[0.12em] text-muted">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                For parents · Free · No signup
-              </p>
-              <h1 className="font-display text-[2.6rem] font-light leading-[1.05] tracking-tight-display text-ink sm:text-[3.4rem] lg:text-[4.2rem]">
-                The real cost of childcare,{" "}
-                <span className="italic font-normal text-accent">honestly</span>{" "}
-                worked out.
-              </h1>
-              <p className="mt-7 max-w-xl text-[1.08rem] leading-relaxed text-muted">
-                Childcare Compass shows what you&apos;ll <em>actually</em> pay each month after government funding, Tax-Free Childcare, and the rules nobody explains properly. No name. No email. No phone number. We never store anything.
-              </p>
-              <div className="mt-9 flex flex-wrap items-center gap-4">
-                <Link
-                  href="/calculator"
-                  className="rounded-full bg-accent px-7 py-3.5 text-[0.98rem] font-medium text-bg transition-all hover:bg-accent-deep"
-                >
-                  Get your estimate →
-                </Link>
-                <Link
-                  href="/how-it-works"
-                  className="rounded-full border border-border bg-surface px-6 py-3.5 text-[0.95rem] font-medium text-ink transition-all hover:border-ink"
-                >
-                  How it works
-                </Link>
-              </div>
-              <p className="mt-6 text-[0.85rem] text-muted">
-                Takes 30 seconds · 27,000+ Ofsted-registered nurseries searchable
-              </p>
-            </div>
-
-            <div className="lg:col-span-5">
-              <div className="relative mx-auto max-w-[420px]">
-                <HeroIllustration className="h-auto w-full" />
-              </div>
-            </div>
+        {/* HERO + CALCULATOR */}
+        <section className="mx-auto max-w-6xl px-6 pt-12 lg:px-10 lg:pt-16">
+          <div className="max-w-3xl">
+            <p className="mb-5 inline-flex flex-wrap items-center gap-2 rounded-full border border-border bg-surface/70 px-3.5 py-1.5 text-[0.74rem] font-medium uppercase tracking-[0.1em] text-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              UK Childcare Cost Calculator · Free · No signup · 2026 rates
+            </p>
+            <h1 className="font-display text-[2.4rem] font-light leading-[1.06] tracking-tight-display text-ink sm:text-[3rem] lg:text-[3.6rem]">
+              The childcare cost calculator that shows what you&apos;ll{" "}
+              <span className="italic font-normal text-accent">actually</span> pay.
+            </h1>
+            <p className="mt-5 text-[1.05rem] leading-relaxed text-muted">
+              Most nurseries quote £8–£10 an hour. The UK government runs several
+              separate funding schemes that can cut that by 60–80% — but only if
+              you know how they stack together. Six quick questions below; your
+              real monthly bill on the right.
+            </p>
           </div>
-        </section>
 
-        {/* Sarah's story — the example showcase, now as a dedicated section */}
-        <section className="relative py-14 lg:py-20">
-          <div className="mx-auto max-w-6xl px-6 lg:px-10">
-            <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
-              <div className="lg:col-span-5">
-                <p className="text-[0.78rem] font-medium uppercase tracking-[0.14em] text-warmth">
+          {/* Stats strip — compact */}
+          <div className="mt-7 grid gap-3 sm:grid-cols-3">
+            <Stat
+              big="Thousands"
+              small="a year in funding the average working family is entitled to"
+            />
+            <Stat
+              big="30 seconds"
+              small="to complete — six questions, an instant itemised result"
+            />
+            <Stat
+              big="Zero"
+              small="personal data stored — no name, email, or phone, ever"
+              accent
+            />
+          </div>
+
+          {/* Real example banner */}
+          <div className="mt-5 overflow-hidden rounded-2xl border border-warmth/30 bg-warmth-soft/50">
+            <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+              <div>
+                <p className="text-[0.74rem] font-medium uppercase tracking-[0.12em] text-warmth">
                   A real example
                 </p>
-                <h2 className="mt-4 font-display text-[1.9rem] font-light leading-tight tracking-tight-display text-ink sm:text-[2.2rem]">
-                  Most parents pay <span className="italic text-accent">far less</span> than the price the nursery quotes them.
-                </h2>
-                <p className="mt-5 text-[1rem] leading-relaxed text-muted">
-                  Government funding for 2-year-olds, Tax-Free Childcare, and the new expanded entitlement compound together — but only if you know about them.
-                </p>
-                <p className="mt-3 text-[1rem] leading-relaxed text-muted">
-                  Meet Sarah. She lives in Oxford, works four days a week, and her two-year-old is in nursery at <span className="font-medium text-ink">£8.20 an hour</span>.
+                <p className="mt-1.5 text-[0.98rem] leading-relaxed text-ink">
+                  Sarah, Oxford — works four days a week, two-year-old in nursery.
                 </p>
               </div>
-
-              <div className="lg:col-span-7">
-                <div className="relative rounded-2xl border border-border bg-surface p-7 shadow-[0_12px_40px_-15px_rgba(74,107,81,0.18)] sm:p-9">
-                  {/* Soft decorative dot top right */}
-                  <span className="absolute -top-2 right-8 h-4 w-4 rounded-full bg-warmth-soft" />
-                  <span className="absolute -top-1 right-7 h-2 w-2 rounded-full bg-warmth" />
-
-                  <div className="space-y-3 text-[0.95rem]">
-                    <Row label="Gross monthly fee" value="£1,135" />
-                    <Row label="30 hours funded" value="−£779" accent />
-                    <Row label="Tax-Free Childcare" value="−£71" accent />
-                    <div className="border-t border-border pt-4 mt-3">
-                      <div className="flex items-end justify-between">
-                        <span className="font-medium text-ink">Sarah&apos;s real monthly bill</span>
-                        <span className="font-display text-[2rem] font-light tabular-nums text-accent">£285</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="mt-6 text-[0.88rem] leading-relaxed text-muted">
-                    That&apos;s <span className="font-medium text-ink">75% less</span> than the nursery&apos;s advertised price. Most parents we&apos;ve spoken to had no idea they were entitled to this much.
+              <div className="flex items-center gap-4 sm:gap-6">
+                <div className="text-center">
+                  <p className="font-display text-[1.5rem] font-light tabular-nums text-muted line-through">
+                    £1,135
+                  </p>
+                  <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted">
+                    advertised
+                  </p>
+                </div>
+                <span className="font-display text-[1.3rem] text-warmth">→</span>
+                <div className="text-center">
+                  <p className="font-display text-[1.9rem] font-light tabular-nums text-accent">
+                    £285
+                  </p>
+                  <p className="text-[0.72rem] uppercase tracking-[0.08em] text-muted">
+                    her real bill
                   </p>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* THE CALCULATOR — the conversion event */}
+          <div className="mt-10 mb-8 border-t border-border pt-10 lg:mt-12 lg:pt-12">
+            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-[1.5rem] font-medium tracking-tight-display text-ink">
+                Six questions. One real number.
+              </h2>
+              <p className="text-[0.85rem] text-muted">
+                2026 rules · last reviewed{" "}
+                <span className="text-ink">{RULES_LAST_REVIEWED}</span>
+              </p>
+            </div>
+            <Calculator />
+          </div>
         </section>
 
-        {/* Why we exist */}
-        <section className="relative border-t border-border/60 bg-surface/40 py-20 lg:py-28">
+        {/* TRUST STRIP — disclaimer */}
+        <section className="mx-auto max-w-6xl px-6 pb-14 lg:px-10">
+          <div className="rounded-2xl border border-border bg-surface p-7 lg:p-9">
+            <h2 className="font-display text-[1.4rem] font-medium leading-tight tracking-tight-display text-ink">
+              This is an estimate — not financial advice.
+            </h2>
+            <div className="mt-4 grid gap-6 text-[0.95rem] leading-relaxed text-muted md:grid-cols-2 lg:gap-10">
+              <p>
+                Childcare Compass uses the public UK government rules for 15 and 30
+                funded hours, and Tax-Free Childcare. Your nursery may charge for
+                consumables (food, nappies), top up funded hours, or offer sibling
+                discounts — we don&apos;t know any of that, so it isn&apos;t included.
+              </p>
+              <p>
+                Before signing any nursery contract, run the official check at{" "}
+                <a
+                  href="https://www.gov.uk/childcare-calculator"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent underline underline-offset-4 hover:text-ink"
+                >
+                  gov.uk/childcare-calculator
+                </a>{" "}
+                and ask your nursery for an itemised quote. The number you see here
+                is a planning estimate.
+              </p>
+            </div>
+            <div className="mt-6 border-t border-border pt-5">
+              <p className="text-[0.9rem] text-muted">
+                Want to find a nursery near you?{" "}
+                <Link
+                  href="/find"
+                  className="font-medium text-accent underline underline-offset-4 hover:text-ink"
+                >
+                  Search 27,000+ Ofsted-registered providers →
+                </Link>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* WHY WE EXIST */}
+        <section className="relative border-t border-border/60 bg-surface/40 py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-6 lg:px-10">
             <div className="grid gap-12 lg:grid-cols-12">
               <div className="lg:col-span-4">
@@ -111,60 +166,67 @@ export default function HomePage() {
               </div>
               <div className="lg:col-span-7 lg:col-start-6 space-y-5 text-[1.02rem] leading-relaxed text-ink">
                 <p>
-                  Every nursery website advertises one number. Every government site explains one set of rules. Working out what you&apos;ll actually pay each month means cross-referencing your child&apos;s age, both parents&apos; incomes, your nursery&apos;s funding model, your tax position, and whether the rules changed last quarter.
+                  Every nursery website advertises one number. Every government site
+                  explains one set of rules. Working out what you&apos;ll actually pay
+                  each month means cross-referencing your child&apos;s age, both
+                  parents&apos; incomes, your nursery&apos;s funding model, your
+                  tax position, and whether the rules changed last quarter.
                 </p>
                 <p>
-                  Most calculators want your name, email, phone number, and your child&apos;s details before they&apos;ll show you a number — and then they sell that information to nurseries trying to sign you up.
+                  Most calculators want your name, email, phone number, and your
+                  child&apos;s details before they&apos;ll show you a number — and
+                  then they sell that information to nurseries trying to sign you up.
                 </p>
                 <p className="font-medium text-accent">
-                  We don&apos;t want any of that. Just give us six rough answers. We&apos;ll give you a real number. You walk away.
+                  We don&apos;t want any of that. Just give us six rough answers.
+                  We&apos;ll give you a real number. You walk away.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* How it works — 3 steps */}
-        <section className="py-20 lg:py-28">
+        {/* HOW IT WORKS */}
+        <section className="py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-6 lg:px-10">
             <p className="text-[0.78rem] font-medium uppercase tracking-[0.14em] text-muted">
               How it works
             </p>
             <h2 className="mt-4 max-w-2xl font-display text-[2rem] font-light leading-tight tracking-tight-display text-ink sm:text-[2.4rem]">
-              Six questions. One real number. Zero data captured.
+              Three minutes from postcode to plan.
             </h2>
 
-            <div className="mt-14 grid gap-8 md:grid-cols-3 lg:gap-12">
+            <div className="mt-12 grid gap-8 md:grid-cols-3 lg:gap-12">
               <Step
                 number="01"
-                title="Tell us about your child"
-                body="Their age and how many hours of childcare you need each week. Funding eligibility depends on age."
+                title="Use the calculator above"
+                body="Six quick questions about your child, your work, your area, and your nursery's funding model. Every answer changes the chart live."
               />
               <Step
                 number="02"
-                title="Tell us about your work"
-                body="Whether both parents work, and roughly what you earn. This unlocks 30 funded hours and Tax-Free Childcare."
+                title="See every scheme applied"
+                body="Funded hours, Tax-Free Childcare, salary sacrifice — compared side by side. The cheapest route is highlighted as 'Best for you'."
               />
               <Step
                 number="03"
-                title="See your real bill"
-                body="An itemised breakdown showing every saving the government owes you. Linked to gov.uk for every rule."
+                title="Download the result"
+                body="A branded PDF with all your numbers, a unique reference code, and the gov.uk source. Take it to your nursery, your partner, or your accountant."
               />
             </div>
 
-            <div className="mt-14">
+            <div className="mt-12">
               <Link
-                href="/calculator"
-                className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-[0.98rem] font-medium text-bg transition-all hover:bg-accent-deep"
+                href="/how-it-works"
+                className="inline-flex items-center gap-2 text-[0.95rem] font-medium text-accent underline underline-offset-4 hover:text-ink"
               >
-                Run the calculator →
+                Read the detailed methodology →
               </Link>
             </div>
           </div>
         </section>
 
-        {/* Find a nursery — now mentions real data */}
-        <section className="relative border-t border-border/60 py-20 lg:py-28">
+        {/* FIND A NURSERY PROMO */}
+        <section className="relative border-t border-border/60 py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-6 lg:px-10">
             <div className="grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-16">
               <div className="lg:col-span-6">
@@ -175,7 +237,10 @@ export default function HomePage() {
                   Every Ofsted-registered nursery in England, on one map.
                 </h2>
                 <p className="mt-5 text-[1.02rem] leading-relaxed text-muted">
-                  27,000+ day nurseries, pre-schools, and childcare settings — all from the official Ofsted register. Enter a postcode and see the closest ones, with their current Ofsted rating, distance, and a direct route to their own website.
+                  27,000+ day nurseries, pre-schools, and childcare settings — all
+                  from the official Ofsted register. Enter a postcode and see the
+                  closest ones, with their current Ofsted rating, distance, and a
+                  direct route to their own website.
                 </p>
                 <div className="mt-7">
                   <Link
@@ -199,7 +264,9 @@ export default function HomePage() {
                     <MiniResultRow name="Bumblebee Cottage Nursery" rating="Good" miles="3.0" />
                   </div>
                   <p className="mt-5 border-t border-border pt-4 text-[0.82rem] leading-relaxed text-muted">
-                    Each result links to a Google search for that provider — where you can find their own website, phone number, and current availability. We never see what you do next.
+                    Each result links to a Google search for that provider — where
+                    you can find their own website, phone number, and current
+                    availability. We never see what you do next.
                   </p>
                 </div>
               </div>
@@ -207,8 +274,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Honest by design */}
-        <section className="relative border-t border-border/60 bg-surface/40 py-20 lg:py-28">
+        {/* HONEST BY DESIGN */}
+        <section className="relative border-t border-border/60 bg-surface/40 py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-6 lg:px-10">
             <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
               <div>
@@ -219,7 +286,8 @@ export default function HomePage() {
                   Things we will never ask you for.
                 </h2>
                 <p className="mt-5 max-w-md text-[1.02rem] leading-relaxed text-muted">
-                  Most childcare websites are lead generation businesses dressed as helpful tools. We&apos;re built to be the opposite.
+                  Most childcare websites are lead generation businesses dressed as
+                  helpful tools. We&apos;re built to be the opposite.
                 </p>
               </div>
 
@@ -250,11 +318,25 @@ export default function HomePage() {
   );
 }
 
-function Row({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Stat({
+  big,
+  small,
+  accent,
+}: {
+  big: string;
+  small: string;
+  accent?: boolean;
+}) {
   return (
-    <div className="flex items-center justify-between">
-      <span className={accent ? "text-accent" : "text-ink"}>{label}</span>
-      <span className={`tabular-nums ${accent ? "text-accent" : "text-ink"}`}>{value}</span>
+    <div
+      className={`rounded-2xl border p-5 ${
+        accent ? "border-accent/30 bg-accent-soft" : "border-border bg-surface"
+      }`}
+    >
+      <p className="font-display text-[1.55rem] font-light leading-none tracking-tight-display text-ink">
+        {big}
+      </p>
+      <p className="mt-2 text-[0.86rem] leading-relaxed text-muted">{small}</p>
     </div>
   );
 }

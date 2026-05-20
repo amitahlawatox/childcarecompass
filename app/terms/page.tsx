@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
+  alternates: { canonical: "/terms" },
   title: "Terms of use",
   description:
     "Terms of use for Childcare Compass. We provide an estimate tool, not financial advice. Use the official gov.uk calculator before making decisions.",

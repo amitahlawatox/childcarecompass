@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 export const metadata = {
+  alternates: { canonical: "/privacy" },
   title: "Privacy — we don't collect anything",
   description:
     "Childcare Compass collects no personal data. No name, no email, no phone number. No cookies for tracking. Read our full privacy promise.",
