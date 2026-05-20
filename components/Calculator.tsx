@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   calculate,
   formatCurrency,
@@ -16,6 +16,8 @@ import {
 import { CalculatorChart } from "@/components/CalculatorChart";
 import { ScenarioComparison } from "@/components/ScenarioComparison";
 import { useCountUp } from "@/lib/use-count-up";
+import { downloadCalculatorPdf } from "@/lib/calculator-pdf";
+import { buildShareUrl, readSharedInputs } from "@/lib/calculator-share";
 
 const DAYS: Array<{ key: keyof WeekSchedule; label: string; short: string }> = [
   { key: "mon", label: "Monday", short: "Mon" },
@@ -48,6 +50,22 @@ export function Calculator() {
   const [hasSalarySacrifice, setHasSalarySacrifice] = useState(false);
   const [salaryTaxBand, setSalaryTaxBand] = useState<SalaryTaxBand>("basic");
   const [view, setView] = useState<"monthly" | "annual">("monthly");
+  const [shareCopied, setShareCopied] = useState(false);
+
+  // On mount: if a shared URL contains encoded inputs, hydrate them
+  useEffect(() => {
+    const shared = readSharedInputs();
+    if (!shared) return;
+    if (shared.ageMonths !== undefined) setAgeMonths(shared.ageMonths);
+    if (shared.regionId) setRegionId(shared.regionId);
+    if (shared.schedule) setSchedule(shared.schedule);
+    if (shared.workingStatus) setWorkingStatus(shared.workingStatus);
+    if (shared.incomeBand) setIncomeBand(shared.incomeBand);
+    if (shared.fundingModel) setFundingModel(shared.fundingModel);
+    if (shared.hasSalarySacrifice !== undefined)
+      setHasSalarySacrifice(shared.hasSalarySacrifice);
+    if (shared.salaryTaxBand) setSalaryTaxBand(shared.salaryTaxBand);
+  }, []);
 
   const result = useMemo(
     () =>
@@ -355,6 +373,62 @@ export function Calculator() {
             <p className="mt-2 text-[0.9rem] text-muted">
               Best route for you: {bestScenario.label.toLowerCase()}
             </p>
+          </div>
+
+          {/* Save & share row */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() =>
+                downloadCalculatorPdf(
+                  {
+                    childAgeMonths: ageMonths,
+                    regionId,
+                    schedule,
+                    workingStatus,
+                    incomeBand,
+                    fundingModel,
+                    hasSalarySacrifice,
+                    salaryTaxBand,
+                  },
+                  result
+                )
+              }
+              className="rounded-full border border-border bg-surface px-4 py-3 text-[0.88rem] font-medium text-ink transition-all hover:border-accent hover:text-accent"
+            >
+              ↓ Download PDF
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const url = buildShareUrl(
+                  {
+                    ageMonths,
+                    regionId,
+                    schedule,
+                    workingStatus,
+                    incomeBand,
+                    fundingModel,
+                    hasSalarySacrifice,
+                    salaryTaxBand,
+                  },
+                  typeof window !== "undefined"
+                    ? window.location.origin + window.location.pathname
+                    : "https://childcarecompass.co.uk/calculator"
+                );
+                try {
+                  await navigator.clipboard.writeText(url);
+                  setShareCopied(true);
+                  setTimeout(() => setShareCopied(false), 2200);
+                } catch {
+                  // Clipboard might be blocked — fall back to prompt
+                  window.prompt("Copy this link:", url);
+                }
+              }}
+              className="rounded-full border border-border bg-surface px-4 py-3 text-[0.88rem] font-medium text-ink transition-all hover:border-accent hover:text-accent"
+            >
+              {shareCopied ? "✓ Link copied" : "⎘ Copy share link"}
+            </button>
           </div>
 
           {/* Cumulative comparison chart */}
