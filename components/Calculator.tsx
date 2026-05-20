@@ -5,11 +5,13 @@ import {
   calculate,
   formatCurrency,
   REGIONS,
+  VOUCHER_BAND_DETAILS,
   type WeekSchedule,
   type DaySession,
   type WorkingStatus,
   type IncomeBand,
   type FundingModel,
+  type SalaryTaxBand,
 } from "@/lib/funding-rules";
 import { CalculatorChart } from "@/components/CalculatorChart";
 import { ScenarioComparison } from "@/components/ScenarioComparison";
@@ -44,6 +46,7 @@ export function Calculator() {
   const [incomeBand, setIncomeBand] = useState<IncomeBand>("under-100k");
   const [fundingModel, setFundingModel] = useState<FundingModel>("term-time");
   const [hasSalarySacrifice, setHasSalarySacrifice] = useState(false);
+  const [salaryTaxBand, setSalaryTaxBand] = useState<SalaryTaxBand>("basic");
   const [view, setView] = useState<"monthly" | "annual">("monthly");
 
   const result = useMemo(
@@ -56,8 +59,18 @@ export function Calculator() {
         incomeBand,
         fundingModel,
         hasSalarySacrifice,
+        salaryTaxBand,
       }),
-    [ageMonths, regionId, schedule, workingStatus, incomeBand, fundingModel, hasSalarySacrifice]
+    [
+      ageMonths,
+      regionId,
+      schedule,
+      workingStatus,
+      incomeBand,
+      fundingModel,
+      hasSalarySacrifice,
+      salaryTaxBand,
+    ]
   );
 
   const bestScenario = result.scenarios.find(
@@ -230,6 +243,59 @@ export function Calculator() {
               { value: "yes", label: "Yes, I have access" },
             ]}
           />
+
+          {/* Conditional tax-band selector — only when salary sacrifice is on.
+              The cap and the saving rate both depend on the parent's tax band,
+              so the net effective cost of nursery changes meaningfully here. */}
+          {hasSalarySacrifice && (
+            <div className="mt-4 animate-fade-in-up rounded-xl border border-accent/30 bg-accent-soft/40 p-4">
+              <p className="text-[0.86rem] font-medium text-ink">
+                Your tax band (of the parent doing salary sacrifice)
+              </p>
+              <p className="mb-3 mt-1 text-[0.78rem] leading-relaxed text-muted">
+                Salary sacrifice saves you the tax + National Insurance you&apos;d
+                otherwise pay on the sacrificed amount — so the actual saving
+                scales with your income.
+              </p>
+              <div className="grid gap-1.5 sm:grid-cols-3">
+                {(["basic", "higher", "additional"] as SalaryTaxBand[]).map((band) => {
+                  const d = VOUCHER_BAND_DETAILS[band];
+                  const isActive = salaryTaxBand === band;
+                  const salaryRange =
+                    d.salaryTo === null
+                      ? `over £${d.salaryFrom.toLocaleString("en-GB")}`
+                      : `£${d.salaryFrom.toLocaleString("en-GB")}–£${d.salaryTo.toLocaleString("en-GB")}`;
+                  return (
+                    <button
+                      key={band}
+                      type="button"
+                      onClick={() => setSalaryTaxBand(band)}
+                      className={`rounded-lg border px-3 py-3 text-left transition-all ${
+                        isActive
+                          ? "border-accent bg-surface"
+                          : "border-border bg-surface hover:border-ink/30"
+                      }`}
+                    >
+                      <span
+                        className={`block text-[0.84rem] font-medium capitalize ${
+                          isActive ? "text-ink" : "text-muted"
+                        }`}
+                      >
+                        {band} rate
+                      </span>
+                      <span className="block text-[0.72rem] text-muted">
+                        Salary {salaryRange}
+                      </span>
+                      <span className="mt-1.5 block text-[0.72rem] tabular-nums text-accent-deep">
+                        {Math.round(d.savingRate * 100)}% saving · £
+                        {d.monthlyCap}/mo cap
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </Field>
       </div>
 

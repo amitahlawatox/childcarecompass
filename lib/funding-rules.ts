@@ -35,15 +35,43 @@ export const TFC_TOPUP_RATE = 0.2;
 export const TFC_MONTHLY_CAP = 500 / 3;
 
 /**
- * Salary sacrifice (childcare vouchers) — basic-rate monthly cap per parent.
- * NOTE: This scheme CLOSED to new entrants in October 2018. Only parents who
- * joined before then (and stayed with the same employer) can use it, OR
- * parents whose employer runs a Workplace Nursery scheme. It is mutually
- * exclusive with Tax-Free Childcare.
+ * Salary sacrifice (childcare vouchers) — tax-band aware.
+ *
+ * The scheme CLOSED to new entrants in October 2018; only grandfathered
+ * users or those whose employer runs a Workplace Nursery scheme can use it.
+ * Cannot be combined with Tax-Free Childcare.
+ *
+ * Monthly cap per parent and the effective tax+NI saving rate both depend
+ * on the parent's income tax band, so the actual saving per £ sacrificed
+ * scales with salary. Caps below are the published 2018 figures (still
+ * applicable to grandfathered users). Saving rates use 2026 UK tax + NI
+ * (8% main NI rate, 2% upper rate).
  */
-export const VOUCHER_MONTHLY_CAP_BASIC = 243;
-/** Combined tax + NI saving rate for a basic-rate taxpayer */
-export const VOUCHER_SAVING_RATE = 0.32;
+export type SalaryTaxBand = "basic" | "higher" | "additional";
+
+export const VOUCHER_BAND_DETAILS: Record<
+  SalaryTaxBand,
+  { monthlyCap: number; savingRate: number; salaryFrom: number; salaryTo: number | null }
+> = {
+  basic: {
+    monthlyCap: 243, // pre-tax £ per month
+    savingRate: 0.28, // 20% income tax + 8% employee NI
+    salaryFrom: 12570,
+    salaryTo: 50270,
+  },
+  higher: {
+    monthlyCap: 124,
+    savingRate: 0.42, // 40% income tax + 2% upper-band NI
+    salaryFrom: 50270,
+    salaryTo: 125140,
+  },
+  additional: {
+    monthlyCap: 110,
+    savingRate: 0.47, // 45% income tax + 2% upper-band NI
+    salaryFrom: 125140,
+    salaryTo: null,
+  },
+};
 
 /** Average weeks per month for cost averaging */
 const WEEKS_PER_MONTH = 4.33;
@@ -137,6 +165,9 @@ export interface CalculatorInputs {
   fundingModel: FundingModel;
   /** Does the family have access to childcare-voucher salary sacrifice? */
   hasSalarySacrifice: boolean;
+  /** Tax band of the parent doing salary sacrifice — drives the cap and saving rate.
+   *  Only used when hasSalarySacrifice is true. */
+  salaryTaxBand?: SalaryTaxBand;
 }
 
 export interface Scenario {
@@ -256,15 +287,19 @@ export function calculate(inputs: CalculatorInputs): FullResult {
   }
 
   // Salary sacrifice (childcare vouchers): saving on the sacrificed amount.
-  // Two working parents could each sacrifice; one-works = single cap.
+  // Cap and rate depend on the parent's income tax band.
+  // Two working parents can each sacrifice; one-works = single cap.
   let voucherSaving = 0;
+  let voucherSacrificed = 0;
+  const taxBand: SalaryTaxBand = inputs.salaryTaxBand ?? "basic";
+  const bandDetails = VOUCHER_BAND_DETAILS[taxBand];
   if (hasSalarySacrifice && afterFunding > 0) {
     const parents = workingStatus === "both-work" ? 2 : 1;
-    const maxSacrifice = Math.min(
+    voucherSacrificed = Math.min(
       afterFunding,
-      VOUCHER_MONTHLY_CAP_BASIC * parents
+      bandDetails.monthlyCap * parents
     );
-    voucherSaving = maxSacrifice * VOUCHER_SAVING_RATE;
+    voucherSaving = voucherSacrificed * bandDetails.savingRate;
   }
 
   // -------- Build the comparison scenarios --------
@@ -307,8 +342,13 @@ export function calculate(inputs: CalculatorInputs): FullResult {
       shortLabel: "+ Salary sacrifice",
       monthlyBill: Math.max(0, afterFunding - voucherSaving),
       annualBill: Math.max(0, afterFunding - voucherSaving) * 12,
-      description:
-        "Funded hours plus childcare-voucher salary sacrifice. Only available if you joined the scheme before October 2018, or your employer runs a workplace nursery scheme. Cannot be combined with Tax-Free Childcare.",
+      description: hasSalarySacrifice
+        ? `Funded hours plus childcare-voucher salary sacrifice at ${taxBand}-rate tax (${Math.round(
+            bandDetails.savingRate * 100
+          )}% saving on up to £${bandDetails.monthlyCap.toLocaleString(
+            "en-GB"
+          )}/month per working parent). Cannot be combined with Tax-Free Childcare.`
+        : "Funded hours plus childcare-voucher salary sacrifice. Only available if you joined the scheme before October 2018, or your employer runs a workplace nursery scheme.",
       available: hasSalarySacrifice,
     },
   ];
@@ -339,7 +379,11 @@ export function calculate(inputs: CalculatorInputs): FullResult {
   }
   if (bestScenario.key === "funded-voucher" && voucherSaving > 0) {
     breakdown.push({
-      label: "Salary-sacrifice saving",
+      label: `Salary-sacrifice saving (${Math.round(
+        bandDetails.savingRate * 100
+      )}% of £${Math.round(voucherSacrificed).toLocaleString(
+        "en-GB"
+      )} sacrificed/mo)`,
       amount: -voucherSaving,
       type: "saving",
     });
@@ -374,9 +418,13 @@ export function calculate(inputs: CalculatorInputs): FullResult {
       "Funded hours and Tax-Free Childcare are withdrawn when either parent earns over £100,000."
     );
   }
-  if (hasSalarySacrifice && taxFreeChildcare) {
+  if (hasSalarySacrifice) {
     notes.push(
-      "You've told us you have salary-sacrifice access. Remember: you can use salary sacrifice OR Tax-Free Childcare — not both. The chart shows each as a separate option so you can compare."
+      `Salary sacrifice at ${taxBand} rate saves you ${Math.round(
+        bandDetails.savingRate * 100
+      )}% tax + National Insurance on up to £${bandDetails.monthlyCap.toLocaleString(
+        "en-GB"
+      )}/month per working parent. You can use salary sacrifice OR Tax-Free Childcare — not both — so the chart shows each as a separate option.`
     );
   }
   notes.push(
